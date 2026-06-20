@@ -1,8 +1,11 @@
 from rest_framework import viewsets 
 from apps.auction.serializers import AuctionListSerializer, AuctionWriteSerializer, AuctionDetailSerializer
 from apps.auction.models import Auction 
+from apps.auction.permissions import IsOwnerOrAdminAuction
 
 class AuctionViewSet(viewsets.ModelViewSet):
+
+    permission_classes = IsOwnerOrAdminAuction 
 
     def get_serializer_class(self):
         
