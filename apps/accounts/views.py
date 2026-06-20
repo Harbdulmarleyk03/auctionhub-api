@@ -1,18 +1,17 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from apps.auth.services import AuthService
-from apps.auth.serializers import RegisterSerializer, LoginSerializer
+from apps.accounts.serializers import RegisterSerializer, LoginSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
-from apps.auth.models import User
+from apps.accounts.models import User
 
 class RegisterAPIView(APIView):
     serializer_class = RegisterSerializer
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            user = AuthService.register_user(serializer.validated_data)
-            return Response({'message': 'User registered successfully'}, status=status.HTTP_201_CREATED)
+            serializer.save()
+            return Response(serializer.data, {'message': 'User registered successfully'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LoginAPIView(APIView):
