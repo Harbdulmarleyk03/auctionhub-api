@@ -1,15 +1,26 @@
 from rest_framework import serializers
 from apps.auction.models import Auction
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User 
+        fields = ['username']
 
 class AuctionWriteSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
     class Meta:
         model = Auction
-        fields = ['id', 'title', 'description', 'starting_price', 'start_time', 'end_time']
+        fields = ['id', 'title', 'description', 'starting_price', 'start_time', 'end_time', 'user']
         
 class AuctionDetailSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+
     class Meta:
         model = Auction
-        fields = "__all__"
+        fields = ['id', 'title', 'description', 'current_price', 'starting_price', 'start_time', 'end_time', 'user']
         
 class AuctionListSerializer(serializers.ModelSerializer):
     class Meta:
