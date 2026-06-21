@@ -1,6 +1,3 @@
-# auctionhub-api
- A Simple Auction Marketplace API
-
 # AuctionHub API
 
 AuctionHub API is a RESTful auction marketplace backend built with Django and Django REST Framework. The platform allows users to create auctions, place bids, and track auction activity while enforcing business rules around bidding and ownership.
