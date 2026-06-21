@@ -6,6 +6,8 @@ from apps.auction.permissions import IsOwnerOrAdminAuction
 from rest_framework.decorators import action 
 from apps.auction.services import AuctionService
 from rest_framework.response import Response
+from django.core.exceptions import ValidationError
+
 
 class AuctionViewSet(viewsets.ModelViewSet):
 
@@ -24,10 +26,17 @@ class AuctionViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return Auction.objects.filter(user=self.request.user)
     
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+    
     @action(detail=True, methods=['post'])
     def place_bid(self, request, pk=None):
-        bid = AuctionService.place_bid(auction_id=pk, user=request.user, bid_price=request.data['bid_price'])
-        return Response(BidSerializer(bid).data, status=status.HTTP_201_CREATED) 
+        try: 
+            bid = AuctionService.place_bid(auction_id=pk, user=request.user, bid_price=request.data['bid_price'])
+            return Response(BidSerializer(bid).data, status=status.HTTP_201_CREATED) 
+        except ValidationError as e:
+            return Response({'error': e.messages}, status=status.HTTP_400_BAD_REQUEST)
+        
 
     @action(detail=True, methods=['post'])
     def close(self, request, pk=None):

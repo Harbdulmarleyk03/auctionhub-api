@@ -2,6 +2,7 @@ from django.db import transaction
 from apps.auction.models import Auction, Bid
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from decimal import Decimal
 
 class AuctionService:
 
@@ -13,7 +14,7 @@ class AuctionService:
                 raise ValidationError("Auction owner cannot bid their own auction")
             if auction.status != "active" or auction.end_time < timezone.now():
                raise ValidationError("Auction is not opened for bidding")
-            if bid_price <= auction.current_price:
+            if Decimal(bid_price) <= auction.current_price:
                 raise ValidationError("Bid must be higher than current price.")
             bid = Bid.objects.create(auction=auction, user=user, bid_price=bid_price)
             auction.current_price = bid_price

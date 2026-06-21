@@ -11,7 +11,7 @@ class RegisterAPIView(APIView):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, {'message': 'User registered successfully'}, status=status.HTTP_201_CREATED)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LoginAPIView(APIView):
@@ -32,6 +32,6 @@ class LogoutAPIView(APIView):
         try:
             token_obj = RefreshToken(token)  
             token_obj.blacklist()
-        except Exception:
-            return Response({'error': 'Failed to blacklist token'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e) }, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_204_NO_CONTENT)
