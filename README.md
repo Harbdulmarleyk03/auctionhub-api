@@ -231,11 +231,11 @@ Bid placement is wrapped in database transactions to ensure:
 
 ## API Documentation
 
-Interactive API documentation is available through Swagger/OpenAPI after running the project.
+Interactive API documentation is available through the link below:
 
 
 ```text
-http://127.0.0.1:8000/api/v1/docs/#/Auctions
+https://app.swaggerhub.com/apis/viziertech/my-api/1.0.0
 ```
 
 ---
