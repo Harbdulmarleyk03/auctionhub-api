@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from apps.auction.models import Auction
+from apps.auction.models import Auction, Bid 
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -26,3 +26,8 @@ class AuctionListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Auction
         fields = ['id', 'title', 'current_price']
+
+class BidSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Bid  
+        fields = ['user', 'auction', 'bid_price', 'created_at']

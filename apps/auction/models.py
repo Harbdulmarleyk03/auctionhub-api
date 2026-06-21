@@ -13,7 +13,7 @@ class Auction(models.Model):
     description = models.TextField()
     starting_price = models.DecimalField(max_digits=10, decimal_places=2)
     current_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    start_time = timezone.now()
+    start_time = models.DateTimeField(default=timezone.now())
     end_time = models.DateTimeField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active', db_index=True)  
 
@@ -24,4 +24,4 @@ class Bid(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='bids', default=1)
     auction = models.ForeignKey(Auction, on_delete=models.CASCADE, related_name='bids')
     bid_price = models.DecimalField(max_digits=10, decimal_places=2)
-    created_at = timezone.now()
+    created_at = models.DateTimeField(default=timezone.now())
