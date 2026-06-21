@@ -250,7 +250,7 @@ http://127.0.0.1:8000/api/v1/docs/#/Auctions
 * Bid notifications
 * Auction watchlists
 * Payment integration
-* Well designed Token Blacklist and Refresh rotation to enhance security
+* Well designed Token Blacklist and Refresh rotation for security
 
 ---
 
