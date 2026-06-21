@@ -1,0 +1,618 @@
+openapi: 3.0.3
+info:
+  title: My API
+  version: 1.0.0
+  description: API documentation
+paths:
+  /api/v1/accounts/login/:
+    post:
+      operationId: accounts_login_create
+      description: 'Authenticates a user with email and password. Returns a JWT access
+        token (short-lived) and a refresh token (long-lived). Use the access token
+        in the Authorization header as: `Bearer <access>`.'
+      summary: Login and obtain JWT tokens
+      tags:
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+            examples:
+              ValidLogin:
+                value:
+                  email: john@example.com
+                  password: securepass123
+                summary: Valid login
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Login'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Login'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+              examples:
+                SuccessResponse:
+                  value:
+                    access: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                    refresh: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  summary: Success response
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/accounts/logout/:
+    post:
+      operationId: accounts_logout_create
+      description: Invalidates the provided refresh token by adding it to the blacklist.
+        After this, the refresh token can no longer be used to obtain new access tokens.
+        Requires `djangorestframework-simplejwt` token blacklisting to be enabled.
+      summary: Logout and blacklist refresh token
+      tags:
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+            examples:
+              ValidLogout:
+                value:
+                  refresh: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                summary: Valid logout
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+              examples:
+                MissingToken:
+                  value:
+                    error: Refresh token is required
+                  summary: Missing token
+                InvalidOrExpiredToken:
+                  value:
+                    error: Token is invalid or expired
+                  summary: Invalid or expired token
+          description: ''
+  /api/v1/accounts/register/:
+    post:
+      operationId: accounts_register_create
+      description: Creates a new user account. Password must be at least 8 characters.
+        Email must be unique.
+      summary: Register a new user
+      tags:
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Register'
+            examples:
+              ValidRegistration:
+                value:
+                  username: john_doe
+                  email: john@example.com
+                  password: securepass123
+                summary: Valid registration
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Register'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Register'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Register'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+              examples:
+                EmailAlreadyExists:
+                  value:
+                    email:
+                    - Email already exists.
+                  summary: Email already exists
+                PasswordTooShort:
+                  value:
+                    password:
+                    - Password must be at least 8 characters long.
+                  summary: Password too short
+          description: ''
+  /api/v1/auctions/:
+    get:
+      operationId: auctions_list
+      description: Returns all auctions belonging to the currently authenticated user.
+      summary: List my auctions
+      tags:
+      - Auctions
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AuctionList'
+          description: ''
+    post:
+      operationId: auctions_create
+      description: Creates a new auction. The authenticated user is automatically
+        set as the owner.
+      summary: Create an auction
+      tags:
+      - Auctions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuctionWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AuctionWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AuctionWrite'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuctionWrite'
+          description: ''
+  /api/v1/auctions/{id}/:
+    get:
+      operationId: auctions_retrieve
+      description: Returns full details of a single auction owned by the authenticated
+        user.
+      summary: Get auction details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - Auctions
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuctionDetail'
+          description: ''
+    put:
+      operationId: auctions_update
+      description: Fully updates an existing auction. Only the owner or admin can
+        do this.
+      summary: Update an auction
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - Auctions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuctionWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AuctionWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AuctionWrite'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuctionWrite'
+          description: ''
+    patch:
+      operationId: auctions_partial_update
+      description: Updates one or more fields of an existing auction.
+      summary: Partially update an auction
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - Auctions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAuctionWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAuctionWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAuctionWrite'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuctionWrite'
+          description: ''
+    delete:
+      operationId: auctions_destroy
+      description: Deletes an auction. Only the owner or admin can perform this action.
+      summary: Delete an auction
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - Auctions
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/auctions/{id}/close/:
+    post:
+      operationId: auctions_close_create
+      description: Closes the specified auction, preventing any further bids. Only
+        the owner or admin can close an auction.
+      summary: Close an auction
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - Auctions
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/auctions/{id}/place_bid/:
+    post:
+      operationId: auctions_place_bid_create
+      description: Places a bid on the specified auction. The bid price must be higher
+        than the current highest bid. Returns the created bid on success.
+      summary: Place a bid on an auction
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - Auctions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Bid'
+            examples:
+              ValidBid:
+                value:
+                  bid_price: '250.00'
+                summary: Valid bid
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Bid'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Bid'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bid'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+              examples:
+                BidTooLow:
+                  value:
+                    error:
+                    - Bid price must be higher than the current highest bid.
+                  summary: Bid too low
+          description: ''
+  /api/v1/auctions/{id}/store_bid_history/:
+    get:
+      operationId: auctions_store_bid_history_list
+      description: Returns the full bid history for the specified auction.
+      summary: Get bid history for an auction
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - Auctions
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Bid'
+          description: ''
+components:
+  schemas:
+    AuctionDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        current_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+        starting_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+        user:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+      required:
+      - description
+      - end_time
+      - id
+      - starting_price
+      - title
+      - user
+    AuctionList:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        current_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+      required:
+      - id
+      - title
+    AuctionWrite:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        starting_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+        user:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+      required:
+      - description
+      - end_time
+      - id
+      - starting_price
+      - title
+      - user
+    Bid:
+      type: object
+      properties:
+        user:
+          type: integer
+        auction:
+          type: integer
+        bid_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        created_at:
+          type: string
+          format: date-time
+      required:
+      - auction
+      - bid_price
+    Login:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 100
+        password:
+          type: string
+          writeOnly: true
+          minLength: 8
+      required:
+      - email
+      - password
+    LoginResponse:
+      type: object
+      properties:
+        access:
+          type: string
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    LogoutRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+      required:
+      - refresh
+    PatchedAuctionWrite:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        starting_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+        user:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+    Register:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        password:
+          type: string
+          writeOnly: true
+          maxLength: 128
+      required:
+      - email
+      - id
+      - password
+      - username
+    User:
+      type: object
+      properties:
+        username:
+          type: string
+          maxLength: 150
+      required:
+      - username
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
