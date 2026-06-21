@@ -60,7 +60,7 @@ def test_bid_must_be_higher_than_current_price(active_user, auth_client):
 
 @pytest.mark.django_db(transaction=True)
 def test_bid_must_be_higher_than_current_price(active_user, auth_client):
-    seller = UserFactory()  # different user owns the auction
+    seller = UserFactory()  
     auction = Auction.objects.create(
         title="Macbook Pro",
         description="Highest quality",
@@ -74,7 +74,7 @@ def test_bid_must_be_higher_than_current_price(active_user, auth_client):
 
     data = {
         "auction": auction.id,
-        "bid_price": "500",  # lower than current_price, should fail
+        "bid_price": "500",  
     }
 
     response = auth_client.post(f"/api/v1/auctions/{auction.id}/place_bid/", data, format="json")
